@@ -9,9 +9,11 @@ const baseMoveInterval = 100;
 
 let moveInterval = baseMoveInterval;
 let speedFactor = 1;
-let snake, dx, dy, score, changingDirection, gameLoop, growSegments, lastMoveTime;
 let speedTimeouts = [];
 let fruits = [];
+let nextDx = gridSize;
+let nextDy = 0;
+let snake, dx, dy, score, changingDirection, gameLoop, growSegments, lastMoveTime;
 
 function resizeCanvas() {
   canvas.width = Math.floor(window.innerWidth / gridSize) * gridSize;
@@ -99,6 +101,10 @@ function draw() {
 
   lastMoveTime = now;
 
+  // 移動前に次の方向を反映（ここがラグ解消のキモ！）
+  dx = nextDx;
+  dy = nextDy;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawGrid();
   fruits.forEach(fruit => drawRect(fruit.x, fruit.y, fruit.color));
@@ -110,8 +116,6 @@ function draw() {
     gameOverDiv.style.display = "block";
     clearInterval(gameLoop);
   }
-
-  changingDirection = false;
 }
 
 function moveSnake() {
@@ -194,9 +198,6 @@ function didGameEnd() {
 }
 
 function changeDirection(event) {
-  if (changingDirection) return;
-  changingDirection = true;
-
   const LEFT = 37, UP = 38, RIGHT = 39, DOWN = 40;
   const goingUp = dy === -gridSize;
   const goingDown = dy === gridSize;
@@ -205,19 +206,20 @@ function changeDirection(event) {
 
   switch (event.keyCode) {
     case LEFT:
-      if (!goingRight) { dx = -gridSize; dy = 0; }
+      if (!goingRight) { nextDx = -gridSize; nextDy = 0; }
       break;
     case UP:
-      if (!goingDown) { dx = 0; dy = -gridSize; }
+      if (!goingDown) { nextDx = 0; nextDy = -gridSize; }
       break;
     case RIGHT:
-      if (!goingLeft) { dx = gridSize; dy = 0; }
+      if (!goingLeft) { nextDx = gridSize; nextDy = 0; }
       break;
     case DOWN:
-      if (!goingUp) { dx = 0; dy = gridSize; }
+      if (!goingUp) { nextDx = 0; nextDy = gridSize; }
       break;
   }
 }
+
 
 document.addEventListener("keydown", changeDirection);
 document.addEventListener('keydown', function(e) {

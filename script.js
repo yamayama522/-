@@ -52,20 +52,41 @@ function clearTimeouts() {
 }
 
 function drawGrid() {
-  ctx.strokeStyle = "#222";
-  for (let x = 0; x < canvas.width; x += gridSize) {
+  const gridSize = 20;
+  ctx.strokeStyle = '#444';
+  ctx.lineWidth = 1;
+
+  for (let x = 0; x <= canvas.width; x += gridSize) {
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, canvas.height);
+    // 濃い線にしたい：左端と右端
+    if (x === 0 || x === canvas.width) {
+      ctx.strokeStyle = '#555'; // 濃い色
+      ctx.lineWidth = 2;        // 太め
+    } else {
+      ctx.strokeStyle = '#444'; // 通常色
+      ctx.lineWidth = 1;        // 通常の太さ
+    }
     ctx.stroke();
   }
-  for (let y = 0; y < canvas.height; y += gridSize) {
+
+  for (let y = 0; y <= canvas.height; y += gridSize) {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(canvas.width, y);
+    // 濃い線にしたい：上端と下端
+    if (y === 0 || y === canvas.height) {
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 2;
+    } else {
+      ctx.strokeStyle = '#444';
+      ctx.lineWidth = 1;
+    }
     ctx.stroke();
   }
 }
+
 
 function drawRect(x, y, color) {
   ctx.fillStyle = color;

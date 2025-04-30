@@ -9,9 +9,10 @@ const baseMoveInterval = 100;
 
 let moveInterval = baseMoveInterval;
 let speedFactor = 1;
-let snake, dx, dy, score, changingDirection, gameLoop, growSegments, lastMoveTime;
+let snake, dx, dy, score, gameLoop, growSegments, lastMoveTime;
 let speedTimeouts = [];
 let fruits = [];
+let directionQueue = [];
 
 function resizeCanvas() {
   canvas.width = Math.floor(window.innerWidth / gridSize) * gridSize;
@@ -30,11 +31,11 @@ function initGame() {
   dy = 0;
   score = 0;
   growSegments = 0;
-  changingDirection = false;
 
   speedFactor = 1;
   moveInterval = baseMoveInterval;
   lastMoveTime = Date.now();
+  directionQueue = [];
 
   clearTimeouts();
   fruits = [];
@@ -42,8 +43,8 @@ function initGame() {
   scoreDisplay.textContent = "スコア: 0";
 
   clearInterval(gameLoop);
-  placeFruit(); // 最初は1個
-  gameLoop = setInterval(draw, 1000 / 60);
+  placeFruit();
+  gameLoop = setInterval(draw, 1000 / 30);
 }
 
 function clearTimeouts() {
@@ -62,8 +63,8 @@ function drawGrid() {
     ctx.lineTo(x, canvas.height);
     // 濃い線にしたい：左端と右端
     if (x === 0 || x === canvas.width) {
-      ctx.strokeStyle = '#555'; // 濃い色
-      ctx.lineWidth = 2;        // 太め
+      ctx.strokeStyle = '#777'; // 濃い色
+      ctx.lineWidth = 5;        // 太め
     } else {
       ctx.strokeStyle = '#444'; // 通常色
       ctx.lineWidth = 1;        // 通常の太さ
@@ -77,8 +78,8 @@ function drawGrid() {
     ctx.lineTo(canvas.width, y);
     // 濃い線にしたい：上端と下端
     if (y === 0 || y === canvas.height) {
-      ctx.strokeStyle = '#555';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#777';
+      ctx.lineWidth = 5;
     } else {
       ctx.strokeStyle = '#444';
       ctx.lineWidth = 1;
@@ -99,6 +100,13 @@ function draw() {
 
   lastMoveTime = now;
 
+  // ここでキューから次の方向を反映
+  if (directionQueue.length > 0) {
+    const next = directionQueue.shift();
+    dx = next.dx;
+    dy = next.dy;
+  }
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawGrid();
   fruits.forEach(fruit => drawRect(fruit.x, fruit.y, fruit.color));
@@ -110,8 +118,6 @@ function draw() {
     gameOverDiv.style.display = "block";
     clearInterval(gameLoop);
   }
-
-  changingDirection = false;
 }
 
 function moveSnake() {
@@ -193,38 +199,38 @@ function didGameEnd() {
   );
 }
 
+// 入力キュー対応の方向変更処理
 function changeDirection(event) {
-  if (changingDirection) return;
-  changingDirection = true;
+  const key = event.keyCode;
 
+  const last = directionQueue.length > 0
+    ? directionQueue[directionQueue.length - 1]
+    : { dx, dy };
+
+  let newDir = null;
   const LEFT = 37, UP = 38, RIGHT = 39, DOWN = 40;
-  const goingUp = dy === -gridSize;
-  const goingDown = dy === gridSize;
-  const goingRight = dx === gridSize;
-  const goingLeft = dx === -gridSize;
 
-  switch (event.keyCode) {
-    case LEFT:
-      if (!goingRight) { dx = -gridSize; dy = 0; }
-      break;
-    case UP:
-      if (!goingDown) { dx = 0; dy = -gridSize; }
-      break;
-    case RIGHT:
-      if (!goingLeft) { dx = gridSize; dy = 0; }
-      break;
-    case DOWN:
-      if (!goingUp) { dx = 0; dy = gridSize; }
-      break;
+  if (key === LEFT && last.dx !== gridSize) {
+    newDir = { dx: -gridSize, dy: 0 };
+  } else if (key === UP && last.dy !== gridSize) {
+    newDir = { dx: 0, dy: -gridSize };
+  } else if (key === RIGHT && last.dx !== -gridSize) {
+    newDir = { dx: gridSize, dy: 0 };
+  } else if (key === DOWN && last.dy !== -gridSize) {
+    newDir = { dx: 0, dy: gridSize };
+  }
+
+  if (newDir && directionQueue.length < 2) {
+    directionQueue.push(newDir);
   }
 }
 
 document.addEventListener("keydown", changeDirection);
+
 document.addEventListener("keydown", (e) => {
-    // ゲームオーバー画面が表示されている状態で Shift キーが押されたら再スタート
-    if (e.key === "Shift" && gameOverDiv.style.display === "block") {
-      initGame();
-    }
-  });
-  
+  if (e.key === "Shift" && gameOverDiv.style.display === "block") {
+    initGame();
+  }
+});
+
 initGame();

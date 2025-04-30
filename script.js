@@ -9,6 +9,7 @@ const baseMoveInterval = 100;
 
 let moveInterval = baseMoveInterval;
 let speedFactor = 1;
+let changingDirection = false;
 let snake, dx, dy, nextDx, nextDy, score, gameLoop, growSegments, lastMoveTime;
 let speedTimeouts = [];
 let fruits = [];
@@ -110,6 +111,7 @@ function draw() {
     gameOverDiv.style.display = "block";
     clearInterval(gameLoop);
   }
+  changingDirection = false;
 }
 
 function moveSnake() {

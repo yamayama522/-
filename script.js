@@ -191,24 +191,34 @@ function didGameEnd() {
 }
 
 function changeDirection(event) {
-  const LEFT = 37, UP = 38, RIGHT = 39, DOWN = 40;
+  if (changingDirection) return;
+  changingDirection = true;
+
   const goingUp = dy === -gridSize;
   const goingDown = dy === gridSize;
   const goingRight = dx === gridSize;
   const goingLeft = dx === -gridSize;
 
-  switch (event.keyCode) {
-    case LEFT:
-      if (!goingRight) { nextDx = -gridSize; nextDy = 0; }
+  switch (event.key) {
+    case "ArrowLeft":
+    case "a":
+    case "A":
+      if (!goingRight) { dx = -gridSize; dy = 0; }
       break;
-    case UP:
-      if (!goingDown) { nextDx = 0; nextDy = -gridSize; }
+    case "ArrowUp":
+    case "w":
+    case "W":
+      if (!goingDown) { dx = 0; dy = -gridSize; }
       break;
-    case RIGHT:
-      if (!goingLeft) { nextDx = gridSize; nextDy = 0; }
+    case "ArrowRight":
+    case "d":
+    case "D":
+      if (!goingLeft) { dx = gridSize; dy = 0; }
       break;
-    case DOWN:
-      if (!goingUp) { nextDx = 0; nextDy = gridSize; }
+    case "ArrowDown":
+    case "s":
+    case "S":
+      if (!goingUp) { dx = 0; dy = gridSize; }
       break;
   }
 }

@@ -199,35 +199,33 @@ function changeDirection(event) {
   const goingRight = dx === gridSize;
   const goingLeft = dx === -gridSize;
 
-  switch (event.key) {
-    case "ArrowLeft":
+  const key = event.key.toLowerCase(); // 小文字化して "W"/"w" 両対応
+
+  switch (key) {
+    case "arrowleft":
     case "a":
-    case "A":
       if (!goingRight) { dx = -gridSize; dy = 0; }
       break;
-    case "ArrowUp":
+    case "arrowup":
     case "w":
-    case "W":
       if (!goingDown) { dx = 0; dy = -gridSize; }
       break;
-    case "ArrowRight":
+    case "arrowright":
     case "d":
-    case "D":
       if (!goingLeft) { dx = gridSize; dy = 0; }
       break;
-    case "ArrowDown":
+    case "arrowdown":
     case "s":
-    case "S":
       if (!goingUp) { dx = 0; dy = gridSize; }
+      break;
+    case "shift":
+      if (gameOverDiv.style.display === "block") {
+        initGame();
+      }
       break;
   }
 }
 
 document.addEventListener("keydown", changeDirection);
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Shift" && gameOverDiv.style.display === "block") {
-    initGame();
-  }
-});
 
 initGame();

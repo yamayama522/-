@@ -9,11 +9,9 @@ const baseMoveInterval = 100;
 
 let moveInterval = baseMoveInterval;
 let speedFactor = 1;
+let snake, dx, dy, nextDx, nextDy, score, gameLoop, growSegments, lastMoveTime;
 let speedTimeouts = [];
 let fruits = [];
-let nextDx = gridSize;
-let nextDy = 0;
-let snake, dx, dy, score, changingDirection, gameLoop, growSegments, lastMoveTime;
 
 function resizeCanvas() {
   canvas.width = Math.floor(window.innerWidth / gridSize) * gridSize;
@@ -30,9 +28,10 @@ function initGame() {
   snake = [{ x: gridSize * 5, y: gridSize * 5 }];
   dx = gridSize;
   dy = 0;
+  nextDx = dx;
+  nextDy = dy;
   score = 0;
   growSegments = 0;
-  changingDirection = false;
 
   speedFactor = 1;
   moveInterval = baseMoveInterval;
@@ -54,7 +53,6 @@ function clearTimeouts() {
 }
 
 function drawGrid() {
-  const gridSize = 20;
   ctx.strokeStyle = '#444';
   ctx.lineWidth = 1;
 
@@ -62,13 +60,12 @@ function drawGrid() {
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, canvas.height);
-    // 濃い線にしたい：左端と右端
     if (x === 0 || x === canvas.width) {
-      ctx.strokeStyle = '#555'; // 濃い色
-      ctx.lineWidth = 2;        // 太め
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 2;
     } else {
-      ctx.strokeStyle = '#444'; // 通常色
-      ctx.lineWidth = 1;        // 通常の太さ
+      ctx.strokeStyle = '#444';
+      ctx.lineWidth = 1;
     }
     ctx.stroke();
   }
@@ -77,7 +74,6 @@ function drawGrid() {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(canvas.width, y);
-    // 濃い線にしたい：上端と下端
     if (y === 0 || y === canvas.height) {
       ctx.strokeStyle = '#555';
       ctx.lineWidth = 2;
@@ -88,7 +84,6 @@ function drawGrid() {
     ctx.stroke();
   }
 }
-
 
 function drawRect(x, y, color) {
   ctx.fillStyle = color;
@@ -101,7 +96,6 @@ function draw() {
 
   lastMoveTime = now;
 
-  // 移動前に次の方向を反映（ここがラグ解消のキモ！）
   dx = nextDx;
   dy = nextDy;
 
@@ -145,11 +139,11 @@ function moveSnake() {
         speedTimeouts.push(timeout);
 
         placeFruit();
-        placeFruit(); // バナナで2個追加
+        placeFruit();
       }
 
       fruits.splice(i, 1);
-      placeFruit(); // 補充
+      placeFruit();
       scoreDisplay.textContent = `スコア: ${score}`;
       break;
     }
@@ -172,7 +166,6 @@ function placeFruit() {
   do {
     x = Math.floor(Math.random() * cols) * gridSize;
     y = Math.floor(Math.random() * rows) * gridSize;
-
     isValidPosition =
       !snake.some(segment => segment.x === x && segment.y === y) &&
       !fruits.some(fruit => fruit.x === x && fruit.y === y);
@@ -220,39 +213,11 @@ function changeDirection(event) {
   }
 }
 
-
 document.addEventListener("keydown", changeDirection);
-document.addEventListener('keydown', function(e) {
-  switch (e.key) {
-    case 'ArrowUp':
-    case 'w':
-    case 'W':
-      if (direction.y === 0) direction = { x: 0, y: -1 };
-      break;
-    case 'ArrowDown':
-    case 's':
-    case 'S':
-      if (direction.y === 0) direction = { x: 0, y: 1 };
-      break;
-    case 'ArrowLeft':
-    case 'a':
-    case 'A':
-      if (direction.x === 0) direction = { x: -1, y: 0 };
-      break;
-    case 'ArrowRight':
-    case 'd':
-    case 'D':
-      if (direction.x === 0) direction = { x: 1, y: 0 };
-      break;
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Shift" && gameOverDiv.style.display === "block") {
+    initGame();
   }
 });
 
-document.addEventListener("keydown", (e) => {
-    // ゲームオーバー画面が表示されている状態で Shift キーが押されたら再スタート
-    if (e.key === "Shift" && gameOverDiv.style.display === "block") {
-      initGame();
-    }
-  });
-  
 initGame();
-

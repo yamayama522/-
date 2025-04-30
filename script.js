@@ -202,6 +202,7 @@ function changeDirection(event) {
   const goingLeft = dx === -gridSize;
 
   const key = event.key.toLowerCase(); // 小文字化して "W"/"w" 両対応
+  const code = event.code.toLowerCase(); // イベントのキーコードも使って確認
 
   switch (key) {
     case "arrowleft":
@@ -227,6 +228,7 @@ function changeDirection(event) {
       break;
   }
 }
+
 
 document.addEventListener("keydown", changeDirection);
 

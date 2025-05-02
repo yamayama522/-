@@ -52,7 +52,7 @@ function clearTimeouts() {
 }
 
 function drawGrid() {
-  ctx.strokeStyle = "#222";
+  ctx.strokeStyle = "#444";
   for (let x = 0; x < canvas.width; x += gridSize) {
     ctx.beginPath();
     ctx.moveTo(x, 0);
@@ -65,6 +65,11 @@ function drawGrid() {
     ctx.lineTo(canvas.width, y);
     ctx.stroke();
   }
+
+  ctx.strokeStyle = "#255"; // 完全な黒
+  ctx.lineWidth = 5; // 太さ
+  ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
 }
 
 function drawRect(x, y, color) {
@@ -184,16 +189,16 @@ function changeDirection(event) {
 
   switch (event.keyCode) {
     case LEFT:
-      if (!goingRight) { dx = -gridSize; dy = 0; }
+      if (!goingRight) { dx = -gridSize; dy = 0;}
       break;
     case UP:
-      if (!goingDown) { dx = 0; dy = -gridSize; }
+      if (!goingDown) { dx = 0; dy = -gridSize;}
       break;
     case RIGHT:
-      if (!goingLeft) { dx = gridSize; dy = 0; }
+      if (!goingLeft) { dx = gridSize; dy = 0;}
       break;
     case DOWN:
-      if (!goingUp) { dx = 0; dy = gridSize; }
+      if (!goingUp) { dx = 0; dy = gridSize;}
       break;
   }
 }

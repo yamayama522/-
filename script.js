@@ -86,7 +86,7 @@ function draw() {
   moveSnake();
 
   if (didGameEnd()) {
-    finalScore.textContent = スコア: ${score};
+    finalScore.textContent = `スコア: ${score}`;
     gameOverDiv.style.display = "block";
     clearInterval(gameLoop);
   }
@@ -126,7 +126,7 @@ function moveSnake() {
 
       fruits.splice(i, 1);
       placeFruit(); // 補充
-      scoreDisplay.textContent = スコア: ${score};
+      scoreDisplay.textContent = `スコア: ${score}`;
       break;
     }
   }

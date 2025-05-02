@@ -1,3 +1,4 @@
+あなた:
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const gameOverDiv = document.getElementById("gameOver");
@@ -9,34 +10,32 @@ const baseMoveInterval = 100;
 
 let moveInterval = baseMoveInterval;
 let speedFactor = 1;
-let snake, dx, dy, score, gameLoop, growSegments, lastMoveTime;
+let snake, dx, dy, score, changingDirection, gameLoop, growSegments, lastMoveTime;
 let speedTimeouts = [];
 let fruits = [];
-let directionQueue = [];
 
 function resizeCanvas() {
   canvas.width = Math.floor(window.innerWidth / gridSize) * gridSize;
   canvas.height = Math.floor(window.innerHeight / gridSize) * gridSize;
 }
 
-window.addEventListener("resize", resizeCanvas);
-
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("resize", () => {
   resizeCanvas();
   initGame();
 });
 
 function initGame() {
+  resizeCanvas();
   snake = [{ x: gridSize * 5, y: gridSize * 5 }];
   dx = gridSize;
   dy = 0;
   score = 0;
   growSegments = 0;
+  changingDirection = false;
 
   speedFactor = 1;
   moveInterval = baseMoveInterval;
   lastMoveTime = Date.now();
-  directionQueue = [];
 
   clearTimeouts();
   fruits = [];
@@ -44,8 +43,8 @@ function initGame() {
   scoreDisplay.textContent = "スコア: 0";
 
   clearInterval(gameLoop);
-  placeFruit();
-  gameLoop = setInterval(draw, 1000 / 30);
+  placeFruit(); // 最初は1個
+  gameLoop = setInterval(draw, 1000 / 60);
 }
 
 function clearTimeouts() {
@@ -54,40 +53,19 @@ function clearTimeouts() {
 }
 
 function drawGrid() {
-  ctx.strokeStyle = '#444';
-  ctx.lineWidth = 1;
-
-  for (let x = 0; x <= canvas.width; x += gridSize) {
+  ctx.strokeStyle = "#222";
+  for (let x = 0; x < canvas.width; x += gridSize) {
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, canvas.height);
-    if (x === 0 || x === canvas.width) {
-      ctx.strokeStyle = '#777';
-      ctx.lineWidth = 5;
-    } else {
-      ctx.strokeStyle = '#444';
-      ctx.lineWidth = 1;
-    }
     ctx.stroke();
   }
-
-  for (let y = 0; y <= canvas.height; y += gridSize) {
+  for (let y = 0; y < canvas.height; y += gridSize) {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(canvas.width, y);
-    if (y === 0 || y === canvas.height) {
-      ctx.strokeStyle = '#777';
-      ctx.lineWidth = 5;
-    } else {
-      ctx.strokeStyle = '#444';
-      ctx.lineWidth = 1;
-    }
     ctx.stroke();
   }
-
-  ctx.strokeStyle = "#000";
-  ctx.lineWidth = 5;
-  ctx.strokeRect(0, 0, canvas.width, canvas.height);
 }
 
 function drawRect(x, y, color) {
@@ -101,12 +79,6 @@ function draw() {
 
   lastMoveTime = now;
 
-  if (directionQueue.length > 0) {
-    const next = directionQueue.shift();
-    dx = next.dx;
-    dy = next.dy;
-  }
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawGrid();
   fruits.forEach(fruit => drawRect(fruit.x, fruit.y, fruit.color));
@@ -114,10 +86,12 @@ function draw() {
   moveSnake();
 
   if (didGameEnd()) {
-    finalScore.textContent = `スコア: ${score}`;
+    finalScore.textContent = スコア: ${score};
     gameOverDiv.style.display = "block";
     clearInterval(gameLoop);
   }
+
+  changingDirection = false;
 }
 
 function moveSnake() {
@@ -145,16 +119,14 @@ function moveSnake() {
           moveInterval = baseMoveInterval / speedFactor;
         }, 3000);
         speedTimeouts.push(timeout);
+
+        placeFruit();
+        placeFruit(); // バナナで2個追加
       }
 
       fruits.splice(i, 1);
-
-      const additionalFruits = fruit.type === "banana" ? 2 : 1;
-      for (let j = 0; j < additionalFruits; j++) {
-        placeFruit();
-      }
-
-      scoreDisplay.textContent = `スコア: ${score}`;
+      placeFruit(); // 補充
+      scoreDisplay.textContent = スコア: ${score};
       break;
     }
   }
@@ -169,8 +141,8 @@ function moveSnake() {
 }
 
 function placeFruit() {
-  const cols = Math.floor(canvas.width / gridSize);
-  const rows = Math.floor(canvas.height / gridSize);
+  const cols = canvas.width / gridSize;
+  const rows = canvas.height / gridSize;
   let x, y, isApple, isValidPosition;
 
   do {
@@ -202,33 +174,37 @@ function didGameEnd() {
 }
 
 function changeDirection(event) {
-  const key = event.key;
+  if (changingDirection) return;
+  changingDirection = true;
 
-  const last = directionQueue.length > 0
-    ? directionQueue[directionQueue.length - 1]
-    : { dx, dy };
+  const LEFT = 37, UP = 38, RIGHT = 39, DOWN = 40;
+  const goingUp = dy === -gridSize;
+  const goingDown = dy === gridSize;
+  const goingRight = dx === gridSize;
+  const goingLeft = dx === -gridSize;
 
-  let newDir = null;
-
-  if (key === "ArrowLeft" && last.dx !== gridSize) {
-    newDir = { dx: -gridSize, dy: 0 };
-  } else if (key === "ArrowUp" && last.dy !== gridSize) {
-    newDir = { dx: 0, dy: -gridSize };
-  } else if (key === "ArrowRight" && last.dx !== -gridSize) {
-    newDir = { dx: gridSize, dy: 0 };
-  } else if (key === "ArrowDown" && last.dy !== -gridSize) {
-    newDir = { dx: 0, dy: gridSize };
-  }
-
-  if (newDir && directionQueue.length < 2) {
-    directionQueue.push(newDir);
+  switch (event.keyCode) {
+    case LEFT:
+      if (!goingRight) { dx = -gridSize; dy = 0; }
+      break;
+    case UP:
+      if (!goingDown) { dx = 0; dy = -gridSize; }
+      break;
+    case RIGHT:
+      if (!goingLeft) { dx = gridSize; dy = 0; }
+      break;
+    case DOWN:
+      if (!goingUp) { dx = 0; dy = gridSize; }
+      break;
   }
 }
 
 document.addEventListener("keydown", changeDirection);
-
 document.addEventListener("keydown", (e) => {
-  if ((e.key === "Shift" || e.key === "r" || e.key === " ") && gameOverDiv.style.display === "block") {
-    initGame();
-  }
-});
+    // ゲームオーバー画面が表示されている状態で Shift キーが押されたら再スタート
+    if (e.key === "Shift" && gameOverDiv.style.display === "block") {
+      initGame();
+    }
+  });
+  
+initGame();

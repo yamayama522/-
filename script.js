@@ -19,10 +19,14 @@ function resizeCanvas() {
   canvas.height = Math.floor(window.innerHeight / gridSize) * gridSize;
 }
 
-window.addEventListener("resize", initGame);
+window.addEventListener("resize", resizeCanvas);
+
+window.addEventListener("DOMContentLoaded", () => {
+  resizeCanvas();
+  initGame();
+});
 
 function initGame() {
-  resizeCanvas();
   snake = [{ x: gridSize * 5, y: gridSize * 5 }];
   dx = gridSize;
   dy = 0;
@@ -228,5 +232,3 @@ document.addEventListener("keydown", (e) => {
     initGame();
   }
 });
-
-initGame();

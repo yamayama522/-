@@ -19,10 +19,7 @@ function resizeCanvas() {
   canvas.height = Math.floor(window.innerHeight / gridSize) * gridSize;
 }
 
-window.addEventListener("resize", () => {
-  resizeCanvas();
-  initGame();
-});
+window.addEventListener("resize", initGame);
 
 function initGame() {
   resizeCanvas();
@@ -53,26 +50,19 @@ function clearTimeouts() {
 }
 
 function drawGrid() {
-<<<<<<< HEAD
-  ctx.strokeStyle = "#444";
-  for (let x = 0; x < canvas.width; x += gridSize) {
-=======
-  const gridSize = 20;
   ctx.strokeStyle = '#444';
   ctx.lineWidth = 1;
 
   for (let x = 0; x <= canvas.width; x += gridSize) {
->>>>>>> 7db7c0c70239a889981d75f89e74cfe8220b565f
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, canvas.height);
-    // 濃い線にしたい：左端と右端
     if (x === 0 || x === canvas.width) {
-      ctx.strokeStyle = '#777'; // 濃い色
-      ctx.lineWidth = 5;        // 太め
+      ctx.strokeStyle = '#777';
+      ctx.lineWidth = 5;
     } else {
-      ctx.strokeStyle = '#444'; // 通常色
-      ctx.lineWidth = 1;        // 通常の太さ
+      ctx.strokeStyle = '#444';
+      ctx.lineWidth = 1;
     }
     ctx.stroke();
   }
@@ -81,7 +71,6 @@ function drawGrid() {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(canvas.width, y);
-    // 濃い線にしたい：上端と下端
     if (y === 0 || y === canvas.height) {
       ctx.strokeStyle = '#777';
       ctx.lineWidth = 5;
@@ -92,12 +81,10 @@ function drawGrid() {
     ctx.stroke();
   }
 
-  ctx.strokeStyle = "#255"; // 完全な黒
-  ctx.lineWidth = 5; // 太さ
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 5;
   ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
 }
-
 
 function drawRect(x, y, color) {
   ctx.fillStyle = color;
@@ -110,7 +97,6 @@ function draw() {
 
   lastMoveTime = now;
 
-  // ここでキューから次の方向を反映
   if (directionQueue.length > 0) {
     const next = directionQueue.shift();
     dx = next.dx;
@@ -155,13 +141,15 @@ function moveSnake() {
           moveInterval = baseMoveInterval / speedFactor;
         }, 3000);
         speedTimeouts.push(timeout);
-
-        placeFruit();
-        placeFruit(); // バナナで2個追加
       }
 
       fruits.splice(i, 1);
-      placeFruit(); // 補充
+
+      const additionalFruits = fruit.type === "banana" ? 2 : 1;
+      for (let j = 0; j < additionalFruits; j++) {
+        placeFruit();
+      }
+
       scoreDisplay.textContent = `スコア: ${score}`;
       break;
     }
@@ -177,8 +165,8 @@ function moveSnake() {
 }
 
 function placeFruit() {
-  const cols = canvas.width / gridSize;
-  const rows = canvas.height / gridSize;
+  const cols = Math.floor(canvas.width / gridSize);
+  const rows = Math.floor(canvas.height / gridSize);
   let x, y, isApple, isValidPosition;
 
   do {
@@ -209,52 +197,34 @@ function didGameEnd() {
   );
 }
 
-// 入力キュー対応の方向変更処理
 function changeDirection(event) {
-  const key = event.keyCode;
+  const key = event.key;
 
   const last = directionQueue.length > 0
     ? directionQueue[directionQueue.length - 1]
     : { dx, dy };
 
   let newDir = null;
-  const LEFT = 37, UP = 38, RIGHT = 39, DOWN = 40;
 
-<<<<<<< HEAD
-  switch (event.keyCode) {
-    case LEFT:
-      if (!goingRight) { dx = -gridSize; dy = 0;}
-      break;
-    case UP:
-      if (!goingDown) { dx = 0; dy = -gridSize;}
-      break;
-    case RIGHT:
-      if (!goingLeft) { dx = gridSize; dy = 0;}
-      break;
-    case DOWN:
-      if (!goingUp) { dx = 0; dy = gridSize;}
-      break;
-=======
-  if (key === LEFT && last.dx !== gridSize) {
+  if (key === "ArrowLeft" && last.dx !== gridSize) {
     newDir = { dx: -gridSize, dy: 0 };
-  } else if (key === UP && last.dy !== gridSize) {
+  } else if (key === "ArrowUp" && last.dy !== gridSize) {
     newDir = { dx: 0, dy: -gridSize };
-  } else if (key === RIGHT && last.dx !== -gridSize) {
+  } else if (key === "ArrowRight" && last.dx !== -gridSize) {
     newDir = { dx: gridSize, dy: 0 };
-  } else if (key === DOWN && last.dy !== -gridSize) {
+  } else if (key === "ArrowDown" && last.dy !== -gridSize) {
     newDir = { dx: 0, dy: gridSize };
   }
 
   if (newDir && directionQueue.length < 2) {
     directionQueue.push(newDir);
->>>>>>> 7db7c0c70239a889981d75f89e74cfe8220b565f
   }
 }
 
 document.addEventListener("keydown", changeDirection);
 
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Shift" && gameOverDiv.style.display === "block") {
+  if ((e.key === "Shift" || e.key === "r" || e.key === " ") && gameOverDiv.style.display === "block") {
     initGame();
   }
 });
